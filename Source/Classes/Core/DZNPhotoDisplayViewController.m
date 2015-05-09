@@ -63,7 +63,7 @@ static CGFloat kDZNPhotoDisplayMinimumBarHeight = 44.0;
 {
     self = [super initWithCollectionViewLayout:layout];
     if (self) {
-        self.title = NSLocalizedString(@"Internet Photos", nil);
+        self.title = NSLocalizedString(@"Google Images", nil);
         
         _currentPage = 1;
         _columnCount = 4;
@@ -79,7 +79,7 @@ static CGFloat kDZNPhotoDisplayMinimumBarHeight = 44.0;
     [super loadView];
     
     _segmentedControlTitles = NSArrayFromServices(self.navigationController.supportedServices);
-    NSAssert((_segmentedControlTitles.count < 4), @"DZNPhotoPickerController doesn't support more than 4 photo service providers");
+    NSAssert((_segmentedControlTitles.count <= 4), @"DZNPhotoPickerController doesn't support more than 4 photo service providers");
     
     _selectedService = DZNFirstPhotoServiceFromPhotoServices(self.navigationController.supportedServices);
     NSAssert((_selectedService > 0), @"DZNPhotoPickerController requieres at least 1 supported photo service provider");
@@ -108,19 +108,31 @@ static CGFloat kDZNPhotoDisplayMinimumBarHeight = 44.0;
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
-    
     if (!_metadataList) {
 
         if (_searchBar.text.length > 0) {
             [self searchPhotosWithKeyword:_searchBar.text];
         }
         else {
-            [self.searchDisplayController setActive:YES];
-            [_searchBar becomeFirstResponder];
         }
+        UILabel *titleView = [[UILabel alloc] initWithFrame:CGRectZero];
+        titleView.backgroundColor = [UIColor clearColor];
+        titleView.font = [UIFont fontWithName:@"Avenir-Medium" size:20.0f];
+        titleView.textColor = [UIColor whiteColor];
+        [titleView setText:@"Google Images"];
+        [titleView sizeToFit];
+        [self.navigationItem setTitleView:titleView];
+        [_searchBar setAutocorrectionType:UITextAutocorrectionTypeDefault];
+        [[UITextField appearanceWhenContainedIn:[UISearchBar class], nil] setFont:[UIFont fontWithName:@"Avenir-Medium" size:14.0f]];
+        [[UITextField appearanceWhenContainedIn:[UISearchBar class], nil] setTextColor:[UIColor blackColor]];
+        [self.searchBar setTintColor:[UIColor blueColor]];
+        [[UITextField appearanceWhenContainedIn:[UISearchBar class], nil] setTintColor:[UIColor blueColor]];
     }
 }
 
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+}
 
 #pragma mark - Getter methods
 
@@ -182,13 +194,9 @@ Returns the custom collection view layout.
     if (!_searchBar)
     {
         _searchBar = [[UISearchBar alloc] initWithFrame:[self searchBarFrame]];
-        _searchBar.placeholder = NSLocalizedString(@"Search", nil);
-        _searchBar.barStyle = UIBarStyleDefault;
-        _searchBar.searchBarStyle = UISearchBarStyleDefault;
-        _searchBar.backgroundColor = [UIColor whiteColor];
-        _searchBar.barTintColor = [UIColor colorWithRed:202.0/255.0 green:202.0/255.0 blue:207.0/255.0 alpha:1.0];
-        _searchBar.tintColor = self.view.window.tintColor;
-        _searchBar.keyboardType = UIKeyboardAppearanceDark;
+        _searchBar.placeholder = @"Search";
+        _searchBar.barTintColor = [UIColor lightGrayColor];
+        _searchBar.tintColor = [UIColor blueColor];
         _searchBar.text = self.navigationController.initialSearchTerm;
         _searchBar.delegate = self;
         
@@ -362,10 +370,10 @@ Returns the custom collection view layout.
  */
 - (BOOL)canDisplayFooterView
 {
-    if (_metadataList.count > 0) {
-        return (_metadataList.count%self.resultPerPage == 0) ? YES : NO;
-    }
-    return self.loading;
+//    if (_metadataList.count > 0) {
+//        return (_metadataList.count%self.resultPerPage == 0) ? YES : NO;
+//    }
+    return YES; //self.loading;
 }
 
 
@@ -520,6 +528,8 @@ Returns the custom collection view layout.
         
         __weak DZNPhotoEditorViewController *_controller = controller;
         
+        [[SDImageCache sharedImageCache] removeImageForKey:[metadata.sourceURL absoluteString] fromDisk:NO];
+        
         [controller.imageView sd_setImageWithPreviousCachedImageWithURL:metadata.sourceURL
                                               andPlaceholderImage:nil
                                                           options:SDWebImageCacheMemoryOnly|SDWebImageProgressiveDownload|SDWebImageRetryFailed
@@ -615,12 +625,17 @@ Returns the custom collection view layout.
     
     _searchBar.text = keyword;
 
+    BOOL shouldLoadMore = NO;
+    if (self.selectedServiceClient.service == DZNPhotoPickerControllerServiceGoogleImages && _currentPage == 1)
+        shouldLoadMore = YES;
     [self.selectedServiceClient searchPhotosWithKeyword:keyword
                                                    page:_currentPage
                                           resultPerPage:self.resultPerPage
                                              completion:^(NSArray *list, NSError *error) {
                                                  if (error) [self setLoadingError:error];
                                                  else [self setPhotoSearchList:list];
+                                                 if (shouldLoadMore)
+                                                     [self loadMorePhotos:self.loadButton];
                                              }];
 }
 
@@ -884,7 +899,7 @@ Returns the custom collection view layout.
 
 - (void)searchBarSearchButtonClicked:(UISearchBar *)searchBar
 {
-    NSString *text = searchBar.text;
+    NSString *text = [[searchBar.text stringByReplacingOccurrencesOfString:@" vs " withString:@" or "] stringByReplacingOccurrencesOfString:@" vs. " withString:@" or "];
     
     [self shouldSearchPhotos:text];
     [self searchBarShouldShift:NO];
@@ -1028,6 +1043,12 @@ Returns the custom collection view layout.
 - (void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
+}
+
+- (void)viewDidLoad {
+    [self.collectionView setShowsVerticalScrollIndicator:NO];
+    [self.navigationController.navigationBar setBarTintColor:[UIColor colorWithRed:0.0f/255 green:145.0f/255 blue:255/255.0f alpha:1.0f]];
+    [super viewDidLoad];
 }
 
 - (void)viewDidUnload

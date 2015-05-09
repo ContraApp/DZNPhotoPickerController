@@ -146,6 +146,8 @@
     if (isConsumerKeyInParametersRequiredForService(self.service)) {
         [params setObject:[self consumerKey] forKey:keyForAPIConsumerKey(self.service)];
     }
+    if (self.service == DZNPhotoPickerControllerServiceGoogleImages)
+        resultPerPage = 10;
     
     //Bing requires parameters to be wrapped in '' values.
     if (self.service == DZNPhotoPickerControllerServiceBingImages) {
@@ -179,6 +181,7 @@
     {
         [params setObject:[self consumerSecret] forKey:keyForAPIConsumerSecret(self.service)];
         [params setObject:@"image" forKey:@"searchType"];
+        [params setObject:@"large" forKey:@"imgSize"];
         [params setObject:@"medium" forKey:@"safe"];
         if (page > 1) [params setObject:@((page - 1) * resultPerPage + 1) forKey:@"start"];
     }
@@ -263,7 +266,6 @@
 - (void)searchPhotosWithKeyword:(NSString *)keyword page:(NSInteger)page resultPerPage:(NSInteger)resultPerPage completion:(DZNHTTPRequestCompletion)completion
 {
     NSString *path = photoSearchUrlPathForService(self.service);
-
     NSDictionary *params = [self photosParamsWithKeyword:keyword page:page resultPerPage:resultPerPage];
     [self getObject:[DZNPhotoMetadata class] path:path params:params completion:completion];
 }
@@ -271,12 +273,10 @@
 - (void)getObject:(Class)class path:(NSString *)path params:(NSDictionary *)params completion:(DZNHTTPRequestCompletion)completion
 {
     _loading = YES;
-    
     if (isAuthenticationRequiredForService(self.service) && ![self accessToken])
     {
         [self authenticateWithClientKey:[self consumerKey] secret:[self consumerSecret]
                        completion:^(NSString *accessToken, NSError *error) {
-                           
                            if (!error) {
                                [self getObject:class path:path params:params completion:completion];
                            }
@@ -296,13 +296,10 @@
     else if (self.service == DZNPhotoPickerControllerServiceFlickr) {
         path = @"";
     }
-        
     [self GET:path parameters:params
       success:^(AFHTTPRequestOperation *operation, id response) {
-          
           NSData *data = [self processData:response];
           NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableLeaves | NSJSONReadingAllowFragments error:nil];
-          
           _loading = NO;
           if (completion) completion([self parseObjects:class withJSON:json], nil);
           
