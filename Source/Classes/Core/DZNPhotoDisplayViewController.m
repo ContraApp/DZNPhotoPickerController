@@ -132,7 +132,7 @@ static NSUInteger kDZNPhotoDisplayMinimumColumnCount = 4.0;
         [titleView setText:@"Google Images"];
         [titleView sizeToFit];
         [self.navigationItem setTitleView:titleView];
-        [_searchBar setAutocorrectionType:UITextAutocorrectionTypeDefault];
+        [self.searchBar setAutocorrectionType:UITextAutocorrectionTypeDefault];
         [[UITextField appearanceWhenContainedIn:[UISearchBar class], nil] setFont:[UIFont fontWithName:@"Avenir-Medium" size:14.0f]];
         [[UITextField appearanceWhenContainedIn:[UISearchBar class], nil] setTextColor:[UIColor blackColor]];
         [self.searchBar setTintColor:[UIColor blueColor]];
@@ -577,10 +577,7 @@ static NSUInteger kDZNPhotoDisplayMinimumColumnCount = 4.0;
     [self.collectionView reloadData];
     
     self.searchBar.text = keyword;
-
-    BOOL shouldLoadMore = NO;
-    if (self.selectedServiceClient.service == DZNPhotoPickerControllerServiceGoogleImages && _currentPage == 1)
-        shouldLoadMore = YES;
+    
     [self.selectedServiceClient searchPhotosWithKeyword:keyword
                                                    page:self.currentPage
                                           resultPerPage:self.resultPerPage
@@ -588,8 +585,6 @@ static NSUInteger kDZNPhotoDisplayMinimumColumnCount = 4.0;
                                                  
                                                  if (error) [self setLoadingError:error];
                                                  else [self setPhotoSearchList:list];
-                                                 if (shouldLoadMore)
-                                                     [self loadMorePhotos:self.loadButton];
                                              }];
 }
 
