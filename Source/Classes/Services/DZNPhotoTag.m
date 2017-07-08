@@ -15,9 +15,6 @@
 
 - (instancetype)initWithTerm:(NSString *)term service:(DZNPhotoPickerControllerServices)service
 {
-    NSParameterAssert([term isKindOfClass:[NSString class]]);
-    NSParameterAssert(service > 0);
-    
     self = [super init];
     if (self) {
         _term = term;
@@ -28,7 +25,11 @@
 
 + (instancetype)newTagWithTerm:(NSString *)term service:(DZNPhotoPickerControllerServices)service
 {
-    return [[DZNPhotoTag alloc] initWithTerm:term service:service];
+    if ([term isKindOfClass:[NSString class]] && service > 0) {
+        DZNPhotoTag *tag = [[DZNPhotoTag alloc] initWithTerm:term service:service];
+        return tag;
+    }
+    return nil;
 }
 
 + (NSArray *)photoTagListFromService:(DZNPhotoPickerControllerServices)service withResponse:(NSArray *)reponse

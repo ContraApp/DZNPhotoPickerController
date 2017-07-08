@@ -62,18 +62,14 @@
 - (void)setSelected:(BOOL)selected
 {
     if (_imageView.image) {
-        [UIView animateWithDuration:0.2 animations:^{
-            [super setSelected:selected];
-        }];
+        [super setSelected:selected];
     }
 }
 
 - (void)setHighlighted:(BOOL)highlighted
 {
     if (_imageView.image) {
-        [UIView animateWithDuration:0.2 animations:^{
-            [super setHighlighted:highlighted];
-        }];
+        [super setHighlighted:highlighted];
     }
 }
 
