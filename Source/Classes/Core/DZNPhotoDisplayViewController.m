@@ -528,13 +528,13 @@ Returns the custom collection view layout.
         
         __weak DZNPhotoEditorViewController *_controller = controller;
         
-        [[SDImageCache sharedImageCache] removeImageForKey:[metadata.sourceURL absoluteString] fromDisk:NO];
+        [[SDImageCache sharedImageCache] removeImageForKey:[metadata.sourceURL absoluteString] fromDisk:NO withCompletion:nil];
         
         [controller.imageView sd_setImageWithPreviousCachedImageWithURL:metadata.sourceURL
-                                              andPlaceholderImage:nil
-                                                          options:SDWebImageCacheMemoryOnly|SDWebImageProgressiveDownload|SDWebImageRetryFailed
-                                                         progress:NULL
-                                                        completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+                                                       placeholderImage:nil
+                                                                options:SDWebImageCacheMemoryOnly|SDWebImageProgressiveDownload|SDWebImageRetryFailed
+                                                               progress:NULL
+                                                              completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
                                                             if (!error) {
                                                                 _controller.rightButton.enabled = YES;
                                                             }
