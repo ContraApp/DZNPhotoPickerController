@@ -25,6 +25,7 @@ Pod::Spec.new do |s|
     ss.dependency   'DZNPhotoPickerController/Editor'
     ss.dependency   'SDWebImage', '~> 4.0'
     ss.dependency   'DZNEmptyDataSet', '~> 1.7'
+    ss.dependency   'MBProgressHUD'
   end
 
   s.subspec 'Services' do |ss|
