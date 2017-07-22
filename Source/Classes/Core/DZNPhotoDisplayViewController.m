@@ -44,6 +44,7 @@ static CGFloat kDZNPhotoDisplayMinimumBarHeight = 44.0;
 @property (nonatomic) NSInteger resultPerPage;
 @property (nonatomic) NSInteger currentPage;
 @property (nonatomic, readonly) NSTimer *searchTimer;
+@property (nonatomic, strong) NSString *searchTerm;
 
 @end
 
@@ -606,7 +607,7 @@ Returns the custom collection view layout.
  */
 - (void)shouldSearchPhotos:(NSString *)keyword
 {
-    if ((_previousService != _selectedService || _searchBar.text != keyword) && keyword.length > 1) {
+    if ((_previousService != _selectedService || ![_searchBar.text isEqualToString:self.searchTerm]) && keyword.length > 1) {
         
         _previousService = _selectedService;
         [self resetPhotos];
@@ -624,7 +625,9 @@ Returns the custom collection view layout.
     [self.collectionView reloadData];
     
     _searchBar.text = keyword;
-
+    
+    self.searchTerm = keyword;
+    
     BOOL shouldLoadMore = NO;
     if (self.selectedServiceClient.service == DZNPhotoPickerControllerServiceGoogleImages && _currentPage == 1)
         shouldLoadMore = YES;
